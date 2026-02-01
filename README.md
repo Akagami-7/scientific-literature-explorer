@@ -86,6 +86,16 @@ The final output shows:
 
 ---
 
+## Creative/Unique Feature
+### Detect Imagery using CNNs
+Unlike traditional literature review tools that rely only on textual information, this project incorporates a **CNN-based visual understanding module** to analyze figures, plots, and diagrams from research papers.
+
+- Figures are extracted from PDFs and processed using Convolutional Neural Networks (CNNs)
+- Visual embeddings are generated for charts, graphs, and architectural diagrams
+- Figure embeddings are fused with textual embeddings during retrieval and answer generation
+
+---
+
 ## System Flow
 ```
 PDFs → Text → Chunks → Embeddings → Vector Database
