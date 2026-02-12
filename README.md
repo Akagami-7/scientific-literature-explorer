@@ -1,14 +1,14 @@
 # Scientific Literature Explorer
 
 ## Description
-The Scientific Literature Explorer is a deep research Q&A system that helps users understand reasearch papers quickly.
+The Scientific Literature Explorer is a deep research Q&A system that helps users understand research papers quickly.
 Instead of reading long PDFs, users can upload papers, ask questions, and get their respective answers along with proper citations.
 
 ---
 
 ## Project Objective
 It allows users to:
-- Upload reasearch papers (PDFs)
+- Upload research papers (PDFs)
 - Ask questions related to those papers
 - Get answers with references to the original papers
 
