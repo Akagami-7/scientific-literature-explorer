@@ -1,6 +1,7 @@
 streamlit
 pdfplumber
 sentence-transformers
+python-dotenv
 faiss-cpu
 torch
 torchvision
