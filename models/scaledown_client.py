@@ -31,8 +31,10 @@ class ScaleDownClient:
         response.raise_for_status()
 
         result = response.json()
-        print(result)
-        if result.get("successful"):
-            return result.get("compressed_prompt")
+        print("STATUS:", response.status_code)
+        print("RESPONSE:", result)
+        return result
+        # if result.get("successful"):
+        #     return result.get("compressed_prompt")
 
-        return None
+        # return None
