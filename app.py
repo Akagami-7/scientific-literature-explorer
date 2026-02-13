@@ -11,10 +11,7 @@ from models.vector_engine import VectorEngine
 from models.citation_graph import CitationGraph
 from models.recommender import Recommender
 
-# ---------------------------------------------------
 # HIGHLIGHT FUNCTION
-# ---------------------------------------------------
-
 def highlight_query(text, query):
     words = query.split()
     for word in words:
@@ -26,17 +23,11 @@ def highlight_query(text, query):
     return text
 
 
-# ---------------------------------------------------
 # CONFIG
-# ---------------------------------------------------
-
 st.set_page_config(page_title="Sci-Lit Explorer", layout="wide")
 
 
-# ---------------------------------------------------
 # SESSION STATE INITIALIZATION
-# ---------------------------------------------------
-
 if "vector_db" not in st.session_state:
     st.session_state.vector_db = VectorEngine(dimension=768)
 
@@ -57,22 +48,32 @@ if "processed" not in st.session_state:
     st.session_state.processed = False
 
 
-# ---------------------------------------------------
 # SIDEBAR
-# ---------------------------------------------------
-
-st.sidebar.title("🔬 Sci-Lit Explorer")
+st.sidebar.title("Sci-Lit Explorer")
 
 uploaded_file = st.sidebar.file_uploader(
     "Upload Research Paper (PDF)", type="pdf"
+)
+
+st.sidebar.subheader("ScaleDown API Key (Optional)")
+
+user_api_key = st.sidebar.text_input(
+    "Enter your ScaleDown API Key", type="password"
 )
 
 use_ai = st.sidebar.checkbox(
     "Enable AI Compression (uses API credits)"
 )
 
-if st.session_state.scaledown is None:
-    st.sidebar.warning("No API key detected. AI compression disabled.")
+st.sidebar.markdown(
+    "Generate your API key at [ScaleDown.ai](https://scaledown.ai/)"
+)
+
+if use_ai and not user_api_key:
+    st.sidebar.warning("Enter API key to enable compression.")
+
+if use_ai and user_api_key:
+    st.sidebar.success("AI Compression Enabled")
 
 if st.sidebar.button("Clear Database"):
     st.session_state.vector_db.reset()
@@ -80,10 +81,7 @@ if st.sidebar.button("Clear Database"):
     st.sidebar.success("Database Cleared!")
 
 
-# ---------------------------------------------------
 # PROCESS FILE (ONLY ONCE)
-# ---------------------------------------------------
-
 if uploaded_file and not st.session_state.processed:
 
     st.session_state.vector_db.reset()
@@ -106,25 +104,34 @@ if uploaded_file and not st.session_state.processed:
         else:
             full_text = data["full_text"]
 
-            # NEW: Compress using ScaleDown if available
-            if use_ai and st.session_state.scaledown:
+            # 🔹 CONDITIONAL COMPRESSION
+            if use_ai and user_api_key:
                 with st.spinner("Compressing paper with ScaleDown..."):
                     try:
-                        compressed = st.session_state.scaledown.compress_paper(full_text)
+                        scaledown_client = ScaleDownClient(user_api_key)
+                        compressed = scaledown_client.compress_paper(full_text)
+
                         if compressed:
                             full_text = compressed
-                    except Exception as e:
+                        else:
+                            st.warning("Compression failed. Using original text.")
+
+                    except Exception:
                         st.warning("ScaleDown failed. Using original text.")
 
+            elif use_ai and not user_api_key:
+                st.warning("Please enter your ScaleDown API key to enable compression.")
 
-            # IMPORTANT: Recreate chunks from compressed/full text
+            # Recreate chunks from compressed/full text
             chunks = compressor.split_into_chunks(full_text)
 
             if len(chunks) > 150:
                 chunks = chunks[:150]
+
             # Encode chunks
             vectors = st.session_state.encoder.encode(chunks)
-            # Store in FAISS
+
+            # Store in vector DB
             st.session_state.vector_db.add_documents(
                 vectors,
                 chunks,
@@ -133,7 +140,7 @@ if uploaded_file and not st.session_state.processed:
 
             st.session_state.vector_db.save_index()
 
-            # Compute document embedding using mean of chunks
+            # Compute document embedding
             paper_embedding = np.mean(vectors, axis=0)
 
             st.session_state.recommender.add_paper(
@@ -180,25 +187,19 @@ if uploaded_file and not st.session_state.processed:
             st.sidebar.success("Paper Processed Successfully!")'''
 
 
-# ---------------------------------------------------
 # MAIN UI
-# ---------------------------------------------------
-
 st.title("Scientific Literature Explorer")
 st.markdown("### Interactive Research Analysis (Student Edition)")
 
 tab1, tab2, tab3 = st.tabs(
-    ["🔍 Semantic Search", "🕸️ Citation Graph", "📊 Recommendations"]
+    ["Semantic Search", "Citation Graph", "Recommendations"]
 )
 
-# ---------------------------------------------------
 # TAB 1: SEMANTIC SEARCH
-# ---------------------------------------------------
-
 with tab1:
 
     user_query = st.text_input(
-        "Search for a concept (e.g., 'Methodology', 'Results'):"
+        "Search for a concept (e.g., 'Methodology', 'Architecture'):"
     )
 
     if user_query and st.session_state.processed:
@@ -237,10 +238,7 @@ with tab1:
         st.info("Upload a PDF to begin searching.")
 
 
-# ---------------------------------------------------
 # TAB 2: CITATION GRAPH
-# ---------------------------------------------------
-
 with tab2:
 
     st.header("Citation Network Analysis")
@@ -267,11 +265,7 @@ with tab2:
     else:
         st.info("Upload a paper to see citation network.")
 
-
-# ---------------------------------------------------
 # TAB 3: RECOMMENDATIONS
-# ---------------------------------------------------
-
 with tab3:
 
     st.header("Content-Based Recommendations")
@@ -301,10 +295,8 @@ with tab3:
     else:
         st.info("Upload a paper to generate recommendations.")
 
-# ---------------------------------------------------
-# TAB 4: AI INSIGHTS
-# ---------------------------------------------------
 
+# TAB 4: AI INSIGHTS
 # with tab4:
 
 #     st.header("AI Research Insights")
