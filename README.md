@@ -7,7 +7,7 @@ Instead of reading long PDFs, users can:
 - Search for concepts using semantic search
 - View the most relevant sections
 - Explore citation relationships
-- View the most relevant sections
+- Receive similarity based recommendations
 
 ---
 
@@ -16,7 +16,8 @@ The goal of this project is to:
 * Enable semantic search within academic papers
 * Improve research exploration using embeddings
 * Visualize citation relationships
-* Demonstrate a scalable architecture for future research intelligence systems
+* Demonstrate a scalable retrieval based architecture
+* Reduce literature review time using intelligent search
 
 ---
 
@@ -32,11 +33,21 @@ The system:
 **Tools used:**
 - `PyPDF2`
 
+> [!NOTE]
+> <b> Optional ScaleDown Compression </b>
+>
+> 
+> If enabled, the system compresses the extracted text using ScaleDown API to:
+> - Reduce document size
+> - Optimize processing time
+> - Preserve technical meaning
+
 ### 2. Split Text into Chunks
 Research papers are very long, so the text is split into smaller parts.
 
-- Each meaningful chunk is about 800–1200 characters
+- Each chunk is about 800–1200 characters
 - Very small or irrelevant lines are ignored
+- Chunks preserve contextual meaning
 
 This helps in tracking where the information came from.
 
@@ -47,17 +58,19 @@ Each text chunk is converted into vector representation called embeddings.
 - Similar text has similar embeddings
 
 **Tools used:**
-- ScaleDownAI Embeddings
+<!-- - ScaleDownAI Embeddings-->
 - Sentence Transformers
 
 ### 4. Store Data
-Embeddings are stored in memory and compared using cosine similarity.
+Embeddings and corresponding text chunks are stored in a vector index.
 
 Stored data includes:
 - Text chunks
 - Chunk embeddings
 - Citation markers
 - Paper metadata
+
+Vector similarity search is performed using cosine similarity.
 
 ### 5. Enter a query
 When a user enters a query:
@@ -66,7 +79,7 @@ When a user enters a query:
 - Top relevant sections are returned.
 - Matching terms are highlighted in the interface
 
-This method is called **semantic search**.
+This method is called **embedding based semantic search**.
 
 ### 6. Generate Answer with Citations
 The system extracts citation markers such as:
@@ -77,6 +90,11 @@ Using these markers, a simple citation network graph is generated to visualize:
 + The uploaded paper
 + Its referenced works
 
+Tool used:
+```
+NetworkX
+```
+
 ### 7. Display Result
 The system includes a basic recommendation module:
 * Paper embeddings are stored in memory.
@@ -85,25 +103,31 @@ The system includes a basic recommendation module:
 
 ---
 
-## Creative/Planned Feature
-### Detect Imagery using CNNs
-As a future enhancement, the system can be extended to include CNN-based visual analysis.
-
-Unlike traditional literature review tools that rely only on textual information, this project incorporates a **CNN-based visual understanding module** to analyze figures, plots, and diagrams from research papers.
-
-- Figures are extracted from PDFs and processed using Convolutional Neural Networks (CNNs)
-- Visual embeddings are generated for charts, graphs, and architectural diagrams
-- Figure embeddings are fused with textual embeddings during retrieval and answer generation
-
----
-
 ## System Flow
 ```
-PDF → Text Extraction → Cleaning → Chunking → Embeddings → Storage
-                                   ↓
-User Query → Query Embedding → Cosine Similarity → Top Relevant Chunks
-                                   ↓
+PDF
+  ↓
+Text Extraction
+  ↓
+(Optional) ScaleDown Compression
+  ↓
+Cleaning & Chunking
+  ↓
+SentenceTransformer Embeddings
+  ↓
+Vector Storage
+  ↓
+-----------------------------------------
+User Query
+  ↓
+Query Embedding
+  ↓
+Cosine Similarity
+  ↓
+Top Relevant Chunks
+  ↓
 Display Results + Citation Graph + Recommendations
+
 ```
 
 ---
@@ -113,6 +137,7 @@ Display Results + Citation Graph + Recommendations
 |-------|------|
 | PDF to Text | PyPDF2 |
 | Text Processing | Python |
+| Compression | ScaleDownAPI |
 | Embeddings | Sentence Transformers |
 | Similarity | Cosine Similarity |
 | Graph Visualization | NetworkX |
@@ -127,6 +152,17 @@ Display Results + Citation Graph + Recommendations
 This project uses **pre-trained neural networks** for:
 - Creating embeddings using Sentence Transformers
 - Semantic similarity comparison for intelligent retrieval
+
+---
+
+## Creative/Planned Feature
+Planned improvements include:
+
+* Multipaper indexing and cross paper comparison
+* Enhanced citation graph analytics
+* Research trend detection
+* Hybrid retrieval (keyword + semantic)
+* Figure extraction and CNN based visual analysis
 
 ---
 
