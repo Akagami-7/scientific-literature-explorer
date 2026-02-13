@@ -14,7 +14,7 @@ class ScaleDownClient:
         }
     
         payload = {
-            "context": "Compress this scientific research paper while preserving technical details.",
+            "context": "You are a scientific summarization engine. Return only the compressed version of the input text.",
             "prompt": text,
             "scaledown": {
                 "rate": "auto"
@@ -36,6 +36,9 @@ class ScaleDownClient:
         if result.get("successful"):
             results_block = result.get("results", {})
             if results_block.get("success"):
-                return results_block.get("compressed_prompt")
+                compressed_text = results_block.get("compressed_prompt")
+
+                if compressed_text and compressed_text.strip() != payload["context"]:
+                    return compressed_text
     
         return None
