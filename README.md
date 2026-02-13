@@ -2,15 +2,21 @@
 
 ## Description
 The Scientific Literature Explorer is a deep research Q&A system that helps users understand research papers quickly.
-Instead of reading long PDFs, users can upload papers, ask questions, and get their respective answers along with proper citations.
+Instead of reading long PDFs, users can:
+- Upload papers
+- Search for concepts using semantic search
+- View the most relevant sections
+- Explore citation relationships
+- View the most relevant sections
 
 ---
 
 ## Project Objective
-It allows users to:
-- Upload research papers (PDFs)
-- Ask questions related to those papers
-- Get answers with references to the original papers
+The goal of this project is to:
+* Enable semantic search within academic papers
+* Improve research exploration using embeddings
+* Visualize citation relationships
+* Demonstrate a scalable architecture for future research intelligence systems
 
 ---
 
@@ -19,25 +25,23 @@ It allows users to:
 Users upload research papers in PDF format.
 
 The system:
-- Reads the PDF
-- Extracts the text content
+- Extracts text from the PDF
+- Cleans formatting
+- Preserves page level references
 
 **Tools used:**
-- `pdfplumber`
+- `PyPDF2`
 
 ### 2. Split Text into Chunks
 Research papers are very long, so the text is split into smaller parts.
 
-- Each chunk is about 300–500 words
-- Each chunk keeps details like:
-  - Paper title
-  - Authors
-  - Section name
+- Each meaningful chunk is about 800–1200 characters
+- Very small or irrelevant lines are ignored
 
 This helps in tracking where the information came from.
 
 ### 3. Create Embeddings
-Each text chunk is converted into numbers called embeddings.
+Each text chunk is converted into vector representation called embeddings.
 
 - These embeddings represent the meaning of the text
 - Similar text has similar embeddings
@@ -47,47 +51,44 @@ Each text chunk is converted into numbers called embeddings.
 - Sentence Transformers
 
 ### 4. Store Data
-All embeddings and related information are stored in a vector database.
-
-**Tools used:**
-- `FAISS`
+Embeddings are stored in memory and compared using cosine similarity.
 
 Stored data includes:
-- Embeddings
 - Text chunks
-- Citation details
+- Chunk embeddings
+- Citation markers
+- Paper metadata
 
-### 5. Ask a Question
-When a user asks a question:
-- The question is also converted into an embedding
-- The system finds the most relevant text chunks
+### 5. Enter a query
+When a user enters a query:
+- The query is converted into an embedding
+- Cosine similarity is computed between the query and stored chunks.
+- Top relevant sections are returned.
+- Matching terms are highlighted in the interface
 
 This method is called **semantic search**.
 
 ### 6. Generate Answer with Citations
-The system sends:
-- The user question
-- The relevant chunks
-
-to a language model.
-
-The model:
-- Generates an answer
-- Uses only the retrieved text
-- Mentions the paper sources
-
-This approach is known as **Retrieval-Augmented Generation (RAG)**.
+The system extracts citation markers such as:
+```
+[1], [3], [7]
+```
+Using these markers, a simple citation network graph is generated to visualize:
++ The uploaded paper
++ Its referenced works
 
 ### 7. Display Result
-The final output shows:
-- A short and clear answer
-- Bullet points if needed
-- Paper title, authors, and year as citation
+The system includes a basic recommendation module:
+* Paper embeddings are stored in memory.
+* Cosine similarity is used to rank similar papers.
+* Top-K similar papers are suggested.
 
 ---
 
-## Creative/Unique Feature
+## Creative/Planned Feature
 ### Detect Imagery using CNNs
+As a future enhancement, the system can be extended to include CNN-based visual analysis.
+
 Unlike traditional literature review tools that rely only on textual information, this project incorporates a **CNN-based visual understanding module** to analyze figures, plots, and diagrams from research papers.
 
 - Figures are extracted from PDFs and processed using Convolutional Neural Networks (CNNs)
@@ -98,9 +99,11 @@ Unlike traditional literature review tools that rely only on textual information
 
 ## System Flow
 ```
-PDFs → Text → Chunks → Embeddings → Vector Database
-↓
-User Question → Embedding → Search → LLM → Answer + Citations
+PDF → Text Extraction → Cleaning → Chunking → Embeddings → Storage
+                                   ↓
+User Query → Query Embedding → Cosine Similarity → Top Relevant Chunks
+                                   ↓
+Display Results + Citation Graph + Recommendations
 ```
 
 ---
@@ -108,22 +111,25 @@ User Question → Embedding → Search → LLM → Answer + Citations
 ## Tools and Technologies
 | Purpose | Tool |
 |-------|------|
-| PDF to text | pdfplumber |
-| Embeddings | ScaleDownAI / Sentence Transformers |
-| Vector storage | FAISS |
-| Language model | Ollama |
-| Backend | FastAPI |
-| Frontend | Streamlit |
+| PDF to Text | PyPDF2 |
+| Text Processing | Python |
+| Embeddings | Sentence Transformers |
+| Similarity | Cosine Similarity |
+| Graph Visualization | NetworkX |
+| Frontend & Backend | Streamlit |
+<!--| Embeddings | ScaleDownAI / Sentence Transformers |-->
+<!--| Vector storage | FAISS |->>
+<!--| Language model | Ollama |-->
 
 ---
 
 ## Neural Networks
 This project uses **pre-trained neural networks** for:
-- Creating embeddings
-- Generating answers
+- Creating embeddings using Sentence Transformers
+- Semantic similarity comparison for intelligent retrieval
 
 ---
 
 ## Summary
-Scientific Literature Explorer makes academic research easier by combining semantic search and citation-based question answering.  
-It is useful for students, researchers, and academic projects where quick and reliable understanding of papers is required.
+Scientific Literature Explorer demonstrates how embedding-based semantic search can improve academic paper exploration.  
+It is useful for students and researchers who want faster and more intelligent access to research content.
