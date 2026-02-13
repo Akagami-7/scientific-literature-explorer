@@ -100,16 +100,28 @@ if uploaded_file and not st.session_state.processed:
                 with st.spinner("Compressing paper with ScaleDown..."):
                     try:
                         scaledown_client = ScaleDownClient(user_api_key.strip())
-                        max_chars = 20000
-                        compressed = scaledown_client.compress_paper(
-                            full_text[:max_chars]
-                        )
-                        if compressed and isinstance(compressed, str):
-                            full_text = compressed
-                            st.success("Compression successful.")
+            
+                        chunks = compressor.split_into_chunks(full_text)
+                        compressed_chunks = []
+            
+                        success_count = 0
+            
+                        for chunk in chunks:
+                            compressed_chunk = scaledown_client.compress_paper(chunk)
+            
+                            if compressed_chunk and isinstance(compressed_chunk, str):
+                                compressed_chunks.append(compressed_chunk)
+                                success_count += 1
+                            else:
+                                compressed_chunks.append(chunk)  # fallback safely
+            
+                        full_text = "\n".join(compressed_chunks)
+            
+                        if success_count > 0:
+                            st.success(f"Compression successful on {success_count}/{len(chunks)} chunks.")
                         else:
-                            st.warning("Compression failed. Using original text.")
-
+                            st.warning("Compression failed on all chunks. Using original text.")
+            
                     except Exception as e:
                         st.error(f"ScaleDown Error: {str(e)}")
 
