@@ -99,11 +99,11 @@ if uploaded_file and not st.session_state.processed:
             if use_ai and user_api_key:
                 with st.spinner("Compressing paper with ScaleDown..."):
                     try:
-                        scaledown_client = ScaleDownClient(user_api_key)
+                        scaledown_client = ScaleDownClient(user_api_key.strip())
                         compressed = scaledown_client.compress_paper(full_text)
-                        st.write(compressed)
                         if compressed:
                             full_text = compressed
+                            st.success("Compression successful.")
                         else:
                             st.warning("Compression failed. Using original text.")
 
