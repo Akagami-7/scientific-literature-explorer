@@ -1,5 +1,10 @@
 # Scientific Literature Explorer
 
+#### Try the demo here: 
+[Scientific Literature Explorer Demo](https://scientific-literature-explorer.streamlit.app/)
+
+---
+
 ## Description
 The Scientific Literature Explorer is a deep research Q&A system that helps users understand research papers quickly.
 Instead of reading long PDFs, users can:
