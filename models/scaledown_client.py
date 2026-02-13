@@ -3,7 +3,7 @@ import json
 
 class ScaleDownClient:
     def __init__(self, api_key):
-        self.api_key = api_key
+        self.api_key = api_key.strip()
         self.base_url = "https://api.scaledown.xyz/compress/raw/"
 
     def compress_paper(self, text):
