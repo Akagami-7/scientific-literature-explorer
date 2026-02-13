@@ -101,7 +101,7 @@ if uploaded_file and not st.session_state.processed:
                     try:
                         scaledown_client = ScaleDownClient(user_api_key)
                         compressed = scaledown_client.compress_paper(full_text)
-
+                        st.write(compressed)
                         if compressed:
                             full_text = compressed
                         else:
