@@ -1,7 +1,5 @@
 import streamlit as st
 import os
-from dotenv import load_dotenv
-load_dotenv()
 import numpy as np
 import re
 from models.scaledown_client import ScaleDownClient
@@ -36,13 +34,6 @@ if "encoder" not in st.session_state:
 
 if "recommender" not in st.session_state:
     st.session_state.recommender = Recommender()
-
-if "scaledown" not in st.session_state:
-    api_key = os.getenv("SCALEDOWN_API_KEY")  # safer than hardcoding
-    if api_key:
-        st.session_state.scaledown = ScaleDownClient(api_key)
-    else:
-        st.session_state.scaledown = None
 
 if "processed" not in st.session_state:
     st.session_state.processed = False
