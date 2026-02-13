@@ -7,7 +7,7 @@ The system processes user uploaded PDFs and enables semantic search, citation vi
 
 ## High Level Architecture
 
-<img src="../assets/system_achitecture.png" alt="High Level Architecture" width="400"/>
+<img src="assets/system_achitecture.png" alt="High Level Architecture" width="400"/>
 
 ---
 
