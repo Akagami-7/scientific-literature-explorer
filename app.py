@@ -100,8 +100,11 @@ if uploaded_file and not st.session_state.processed:
                 with st.spinner("Compressing paper with ScaleDown..."):
                     try:
                         scaledown_client = ScaleDownClient(user_api_key.strip())
-                        compressed = scaledown_client.compress_paper(full_text)
-                        if compressed:
+                        max_chars = 20000
+                        compressed = scaledown_client.compress_paper(
+                            full_text[:max_chars]
+                        )
+                        if compressed and isinstance(compressed, str):
                             full_text = compressed
                             st.success("Compression successful.")
                         else:
