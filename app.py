@@ -107,8 +107,9 @@ if uploaded_file and not st.session_state.processed:
                         else:
                             st.warning("Compression failed. Using original text.")
 
-                    except Exception:
-                        st.warning("ScaleDown failed. Using original text.")
+                    except Exception as e:
+                        st.error(f"ScaleDown Error: {str(e)}")
+
 
             elif use_ai and not user_api_key:
                 st.warning("Please enter your ScaleDown API key to enable compression.")
