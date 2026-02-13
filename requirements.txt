@@ -1,0 +1,11 @@
+streamlit
+pdfplumber
+sentence-transformers
+faiss-cpu
+torch
+torchvision
+networkx
+matplotlib
+requests
+numpy
+pillow
