@@ -1,14 +1,15 @@
 import streamlit as st
 import os
+from dotenv import load_dotenv
+load_dotenv()
 import numpy as np
 import re
-
+from models.scaledown_client import ScaleDownClient
 from models.paper_compressor import PaperCompressor
 from models.text_encoder import TextEncoder
 from models.vector_engine import VectorEngine
 from models.citation_graph import CitationGraph
 from models.recommender import Recommender
-
 
 # ---------------------------------------------------
 # HIGHLIGHT FUNCTION
@@ -45,6 +46,13 @@ if "encoder" not in st.session_state:
 if "recommender" not in st.session_state:
     st.session_state.recommender = Recommender()
 
+if "scaledown" not in st.session_state:
+    api_key = os.getenv("SCALEDOWN_API_KEY")  # safer than hardcoding
+    if api_key:
+        st.session_state.scaledown = ScaleDownClient(api_key)
+    else:
+        st.session_state.scaledown = None
+
 if "processed" not in st.session_state:
     st.session_state.processed = False
 
@@ -58,6 +66,13 @@ st.sidebar.title("🔬 Sci-Lit Explorer")
 uploaded_file = st.sidebar.file_uploader(
     "Upload Research Paper (PDF)", type="pdf"
 )
+
+use_ai = st.sidebar.checkbox(
+    "Enable AI Compression (uses API credits)"
+)
+
+if st.session_state.scaledown is None:
+    st.sidebar.warning("No API key detected. AI compression disabled.")
 
 if st.sidebar.button("Clear Database"):
     st.session_state.vector_db.reset()
@@ -89,7 +104,53 @@ if uploaded_file and not st.session_state.processed:
         if "error" in data:
             st.error(data["error"])
         else:
+            full_text = data["full_text"]
+
+            # NEW: Compress using ScaleDown if available
+            if use_ai and st.session_state.scaledown:
+                with st.spinner("Compressing paper with ScaleDown..."):
+                    try:
+                        compressed = st.session_state.scaledown.compress_paper(full_text)
+                        if compressed:
+                            full_text = compressed
+                    except Exception as e:
+                        st.warning("ScaleDown failed. Using original text.")
+
+
+            # IMPORTANT: Recreate chunks from compressed/full text
+            chunks = compressor.split_into_chunks(full_text)
+
+            if len(chunks) > 150:
+                chunks = chunks[:150]
             # Encode chunks
+            vectors = st.session_state.encoder.encode(chunks)
+            # Store in FAISS
+            st.session_state.vector_db.add_documents(
+                vectors,
+                chunks,
+                uploaded_file.name
+            )
+
+            st.session_state.vector_db.save_index()
+
+            # Compute document embedding using mean of chunks
+            paper_embedding = np.mean(vectors, axis=0)
+
+            st.session_state.recommender.add_paper(
+                uploaded_file.name,
+                paper_embedding
+            )
+
+            # Store metadata
+            st.session_state.citation_data = data["citations"]
+            st.session_state.paper_title = uploaded_file.name
+            st.session_state.full_text = full_text
+
+            st.session_state.processed = True
+
+            st.sidebar.success("Paper Processed Successfully!")
+
+            '''# Encode chunks
             vectors = st.session_state.encoder.encode(data["chunks"])
 
             # Store in FAISS
@@ -116,7 +177,7 @@ if uploaded_file and not st.session_state.processed:
 
             st.session_state.processed = True
 
-            st.sidebar.success("Paper Processed Successfully!")
+            st.sidebar.success("Paper Processed Successfully!")'''
 
 
 # ---------------------------------------------------
@@ -239,3 +300,33 @@ with tab3:
 
     else:
         st.info("Upload a paper to generate recommendations.")
+
+# ---------------------------------------------------
+# TAB 4: AI INSIGHTS
+# ---------------------------------------------------
+
+# with tab4:
+
+#     st.header("AI Research Insights")
+
+#     if st.session_state.processed and st.session_state.scaledown:
+
+#         with st.spinner("Generating research insights..."):
+
+#             insights = st.session_state.scaledown.extract_insights(
+#                 st.session_state.full_text
+#             )
+
+#             if insights:
+#                 st.subheader("Key Contributions")
+#                 st.write(insights.get("contributions", "Not available"))
+
+#                 st.subheader("Research Gaps")
+#                 st.write(insights.get("gaps", "Not available"))
+
+#                 st.subheader("Future Work")
+#                 st.write(insights.get("future_work", "Not available"))
+#             else:
+#                 st.warning("Could not generate insights.")
+#     else:
+#         st.info("Upload paper and configure API key to use AI insights.")

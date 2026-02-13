@@ -1,7 +1,6 @@
 import re
 from PyPDF2 import PdfReader
 
-
 class PaperCompressor:
     def __init__(self):
         self.chunk_size = 1000
@@ -37,7 +36,7 @@ class PaperCompressor:
         citations = list(set(citations))
 
         # Create chunks
-        chunks = self._create_chunks(clean_text)
+        chunks = self.split_into_chunks(clean_text)
 
         return {
             "chunks": chunks[:150],  # limit for speed
@@ -45,7 +44,7 @@ class PaperCompressor:
             "full_text": clean_text
         }
 
-    def _create_chunks(self, text):
+    def split_into_chunks(self, text):
         paragraphs = text.split("\n")
 
         chunks = []
