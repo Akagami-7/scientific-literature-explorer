@@ -11,7 +11,6 @@ from models.recommender import Recommender
 from auth import AuthManager
 from history import HistoryManager
 
-<<<<<<< HEAD
 # ---------------------------------------------------
 # INITIALIZE MANAGERS
 # ---------------------------------------------------
@@ -37,9 +36,6 @@ if st.query_params.get("google_id_token"):
     else:
         st.error(f"Google Login failed: {res['error']}")
 
-=======
-# HIGHLIGHT FUNCTION
->>>>>>> c6489142cc8463c417f3f84e173ed99391c69ed8
 def highlight_query(text, query):
     import re
     words = query.split()
@@ -51,15 +47,10 @@ def highlight_query(text, query):
         )
     return text
 
-<<<<<<< HEAD
 # ---------------------------------------------------
 # CONFIG & STYLE
 # ---------------------------------------------------
 
-=======
-
-# CONFIG
->>>>>>> c6489142cc8463c417f3f84e173ed99391c69ed8
 st.set_page_config(page_title="Sci-Lit Explorer", layout="wide")
 
 # Professional CSS Injection
@@ -114,7 +105,6 @@ if "processed" not in st.session_state:
     st.session_state.processed = False
 
 
-<<<<<<< HEAD
 # ---------------------------------------------------
 # SIDEBAR & MAIN APP
 # ---------------------------------------------------
@@ -130,176 +120,6 @@ def main_app():
 
     uploaded_file = st.sidebar.file_uploader(
         "Upload Research Paper (PDF)", type="pdf"
-=======
-# SIDEBAR
-st.sidebar.title("Sci-Lit Explorer")
-
-uploaded_file = st.sidebar.file_uploader(
-    "Upload Research Paper (PDF)", type="pdf"
-)
-
-st.sidebar.subheader("ScaleDown API Key (Optional)")
-
-user_api_key = st.sidebar.text_input(
-    "Enter your ScaleDown API Key", type="password"
-)
-
-use_ai = st.sidebar.checkbox(
-    "Enable AI Compression (uses API credits)"
-)
-
-st.sidebar.markdown(
-    "Generate your API key at [ScaleDown.ai](https://scaledown.ai/)"
-)
-
-if use_ai and not user_api_key:
-    st.sidebar.warning("Enter API key to enable compression.")
-
-if use_ai and user_api_key:
-    st.sidebar.success("AI Compression Enabled")
-
-if st.sidebar.button("Clear Database"):
-    st.session_state.vector_db.reset()
-    st.session_state.processed = False
-    st.sidebar.success("Database Cleared!")
-
-
-# PROCESS FILE (ONLY ONCE)
-if uploaded_file and not st.session_state.processed:
-
-    st.session_state.vector_db.reset()
-
-    with st.spinner("Processing Paper..."):
-
-        # Save file
-        os.makedirs("data/uploads", exist_ok=True)
-        save_path = os.path.join("data/uploads", uploaded_file.name)
-
-        with open(save_path, "wb") as f:
-            f.write(uploaded_file.getbuffer())
-
-        # Extract content
-        compressor = PaperCompressor()
-        data = compressor.extract_content(save_path)
-
-        if "error" in data:
-            st.error(data["error"])
-        else:
-            full_text = data["full_text"]
-
-            # 🔹 CONDITIONAL COMPRESSION
-            if use_ai and user_api_key:
-                with st.spinner("Compressing paper with ScaleDown..."):
-                    try:
-                        scaledown_client = ScaleDownClient(user_api_key.strip())
-            
-                        chunks = compressor.split_into_chunks(full_text)
-                        compressed_chunks = []
-            
-                        success_count = 0
-            
-                        for chunk in chunks:
-                            compressed_chunk = scaledown_client.compress_paper(chunk)
-            
-                            if compressed_chunk and isinstance(compressed_chunk, str):
-                                compressed_chunks.append(compressed_chunk)
-                                success_count += 1
-                            else:
-                                compressed_chunks.append(chunk)  # fallback safely
-            
-                        full_text = "\n".join(compressed_chunks)
-            
-                        if success_count > 0:
-                            st.success(f"Compression successful on {success_count}/{len(chunks)} chunks.")
-                        else:
-                            st.warning("Compression failed on all chunks. Using original text.")
-            
-                    except Exception as e:
-                        st.error(f"ScaleDown Error: {str(e)}")
-
-
-            elif use_ai and not user_api_key:
-                st.warning("Please enter your ScaleDown API key to enable compression.")
-
-            # Recreate chunks from compressed/full text
-            chunks = compressor.split_into_chunks(full_text)
-
-            if len(chunks) > 150:
-                chunks = chunks[:150]
-
-            # Encode chunks
-            vectors = st.session_state.encoder.encode(chunks)
-
-            # Store in vector DB
-            st.session_state.vector_db.add_documents(
-                vectors,
-                chunks,
-                uploaded_file.name
-            )
-
-            st.session_state.vector_db.save_index()
-
-            # Compute document embedding
-            paper_embedding = np.mean(vectors, axis=0)
-
-            st.session_state.recommender.add_paper(
-                uploaded_file.name,
-                paper_embedding
-            )
-
-            # Store metadata
-            st.session_state.citation_data = data["citations"]
-            st.session_state.paper_title = uploaded_file.name
-            st.session_state.full_text = full_text
-
-            st.session_state.processed = True
-
-            st.sidebar.success("Paper Processed Successfully!")
-
-            '''# Encode chunks
-            vectors = st.session_state.encoder.encode(data["chunks"])
-
-            # Store in FAISS
-            st.session_state.vector_db.add_documents(
-                vectors,
-                data["chunks"],
-                uploaded_file.name
-            )
-
-            st.session_state.vector_db.save_index()
-
-            # Compute document embedding using mean of chunks (FAST)
-            paper_embedding = np.mean(vectors, axis=0)
-
-            st.session_state.recommender.add_paper(
-                uploaded_file.name,
-                paper_embedding
-            )
-
-            # Store metadata
-            st.session_state.citation_data = data["citations"]
-            st.session_state.paper_title = uploaded_file.name
-            st.session_state.full_text = data["full_text"]
-
-            st.session_state.processed = True
-
-            st.sidebar.success("Paper Processed Successfully!")'''
-
-
-# MAIN UI
-st.title("Scientific Literature Explorer")
-st.markdown("### Interactive Research Analysis (Student Edition)")
-
-tab1, tab2, tab3 = st.tabs(
-    ["Semantic Search", "Citation Graph", "Recommendations"]
-)
-
-# TAB 1: SEMANTIC SEARCH
-with tab1:
-
-    user_query = st.text_input(
-        "Search for a concept (e.g., 'Methodology', 'Architecture'):"
->>>>>>> c6489142cc8463c417f3f84e173ed99391c69ed8
     )
 
     use_ai = st.sidebar.checkbox(
@@ -352,7 +172,6 @@ with tab1:
                             st.warning("ScaleDown failed. Using original text.")
 
 
-<<<<<<< HEAD
                 # IMPORTANT: Recreate chunks from compressed/full text
                 chunks = compressor.split_into_chunks(full_text)
 
@@ -365,58 +184,6 @@ with tab1:
                     vectors,
                     chunks,
                     uploaded_file.name
-=======
-# TAB 2: CITATION GRAPH
-with tab2:
-
-    st.header("Citation Network Analysis")
-
-    if st.session_state.processed:
-
-        graph_builder = CitationGraph()
-
-        graph_builder.build_star_graph(
-            st.session_state.paper_title,
-            st.session_state.citation_data
-        )
-
-        fig = graph_builder.get_matplotlib_figure()
-
-        if st.session_state.citation_data:
-            st.pyplot(fig)
-            st.write(
-                f"Detected {len(st.session_state.citation_data)} references."
-            )
-        else:
-            st.warning("No citation markers like [1], [2] found.")
-
-    else:
-        st.info("Upload a paper to see citation network.")
-
-# TAB 3: RECOMMENDATIONS
-with tab3:
-
-    st.header("Content-Based Recommendations")
-
-    if st.session_state.processed:
-
-        # Use mean embedding we already computed
-        query_embedding = np.mean(
-            st.session_state.vector_db.index.reconstruct_n(
-                0, st.session_state.vector_db.index.ntotal
-            ),
-            axis=0
-        )
-
-        recommendations = st.session_state.recommender.get_recommendations(
-            query_embedding
-        )
-
-        if recommendations:
-            for rec in recommendations:
-                st.info(
-                    f"**{rec['title']}**\n\nSimilarity Score: {rec['score']:.4f}"
->>>>>>> c6489142cc8463c417f3f84e173ed99391c69ed8
                 )
 
                 st.session_state.vector_db.save_index()
@@ -608,7 +375,6 @@ with tab3:
                 st.text(f"- {u['filename']} ({u['timestamp'][:16]})")
 
 
-<<<<<<< HEAD
 # ---------------------------------------------------
 # LOGIN / SIGNUP PAGE
 # ---------------------------------------------------
@@ -698,11 +464,6 @@ def login_page():
                 </button>
                 """
                 st.components.v1.html(google_auth_html, height=60)
-=======
-
-# TAB 4: AI INSIGHTS
-# with tab4:
->>>>>>> c6489142cc8463c417f3f84e173ed99391c69ed8
 
             with tab_signup:
                 new_email = st.text_input("Email", key="signup_email")
