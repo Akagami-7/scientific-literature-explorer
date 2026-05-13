@@ -24,6 +24,13 @@ if "history_manager" not in st.session_state:
 if "user" not in st.session_state:
     st.session_state.user = None
 
+if "scaledown" not in st.session_state:
+    api_key = os.getenv("SCALEDOWN_API_KEY")
+    if api_key:
+        st.session_state.scaledown = ScaleDownClient(api_key)
+    else:
+        st.session_state.scaledown = None
+
 # Handle Google Auth Redirect
 if st.query_params.get("google_id_token"):
     token = st.query_params.get("google_id_token")
@@ -423,14 +430,21 @@ def login_page():
                 config_json = json.dumps(auth_config)
                 
                 google_auth_html = f"""
+                <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap" rel="stylesheet">
                 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
                 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
                 <script>
                     const firebaseConfig = {config_json};
-                    firebase.initializeApp(firebaseConfig);
+                    if (!firebase.apps.length) {{
+                        firebase.initializeApp(firebaseConfig);
+                    }}
                     const provider = new firebase.auth.GoogleAuthProvider();
                     
                     function signIn() {{
+                        const btn = document.getElementById('google-btn');
+                        btn.style.opacity = '0.7';
+                        btn.innerHTML = 'Connecting...';
+                        
                         firebase.auth().signInWithPopup(provider)
                             .then((result) => {{
                                 result.user.getIdToken().then((idToken) => {{
@@ -440,30 +454,35 @@ def login_page():
                                 }});
                             }}).catch((error) => {{
                                 console.error(error);
-                                alert("Error during Google Sign-In: " + error.message);
+                                btn.style.opacity = '1';
+                                btn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18"> Sign in with Google';
+                                alert("Google Sign-In Error: " + error.message);
                             }});
                     }}
                 </script>
-                <button onclick="signIn()" style="
+                <button id="google-btn" onclick="signIn()" style="
                     width: 100%;
-                    height: 3em;
+                    height: 44px;
                     background-color: white;
                     color: #757575;
                     border: 1px solid #dadce0;
                     border-radius: 4px;
-                    font-family: 'Roboto', arial, sans-serif;
+                    font-family: 'Roboto', sans-serif;
+                    font-size: 14px;
                     font-weight: 500;
                     cursor: pointer;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     gap: 10px;
-                ">
+                    transition: background-color 0.2s;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                " onmouseover="this.style.backgroundColor='#f8f9fa'" onmouseout="this.style.backgroundColor='white'">
                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18">
                     Sign in with Google
                 </button>
                 """
-                st.components.v1.html(google_auth_html, height=60)
+                st.components.v1.html(google_auth_html, height=70)
 
             with tab_signup:
                 new_email = st.text_input("Email", key="signup_email")
