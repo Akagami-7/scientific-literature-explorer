@@ -1,5 +1,12 @@
 import streamlit as st
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+env_path = Path(__file__).parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
 import numpy as np
 import re
 from models.scaledown_client import ScaleDownClient
