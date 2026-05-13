@@ -9,3 +9,5 @@ matplotlib
 requests
 numpy
 pillow
+pyrebase4
+redis
